@@ -47,14 +47,14 @@ The solid color bar indicates the primary execution period for a core-task. A pa
 
 **Milestone:** Fair comparison of the hybrid model and baseline models.
 
-## Week 5: Global & Local Explainability (XAI Part 1)
+## Week 5: Global & Local Explainability (XAI Part-1)
 **Focus:** First part of Phase 6
 * Initialize SHAP with a training reference sample and generate global feature-importance summaries supported by the implementation.
 * Create PDP plots and show leading features.
 
 **Milestone:** Global explanation figures using shap and pdp will be generated.
 
-**Week 6:** Local Explainability & Dashboarding(result exporting)
+## Week 6: Local Explainability (XAI Part-2) & Dashboarding(result exporting)
 **Focus:** Finish Phase 6 and execute Phase 7
 * Generate local SHAP and LIME explanations for a selected customer.
 * Collect explainable plots in the dashboard exporter.
