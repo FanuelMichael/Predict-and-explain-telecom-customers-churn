@@ -21,19 +21,21 @@ The solid color bar indicates the primary execution period for a core-task. A pa
 
 ## Week 2: Feature Engineering & Model Architecture
 **Focus:** Finish Phase 2 and begin Phase 3
-* Create necessary feature engineering; normalize categorical values and encode binary/multivalued features consistently.
-* Split rows into stratified training, validation, and test partitions before fitting preprocessing.
-* Apply SMOTE to the training partition only; preserve validation/test data in their natural distributions.
+* Split rows into stratified training, and test partitions.
+* Impute missing values (fit on training set only)
+* Preporocess(Impute missing values,One-Hot Encode categorical variables).
+* StandardScaler (fit and transform in train data).
+* Apply SMOTE to the training partition only; keep validation/test data untouched.
 * Prepare model tensors and build the parallel 1D CNN and BiLSTM branches with HybridAttention.
   
 **Milestone:** Leakage-aware data partitions and a compiling hybrid architecture.
 
 ## Week 3: Model Training & Evaluation
 **Focus:** Finish Phase 3 and execute Phase 4
-* Train the hybrid model using the training partition and validation callbacks such as EarlyStopping and ReduceLROnPlateau.
+* Train the hybrid model using the training partition.
 * Tune model settings using validation performance.
 * Select the classification threshold using validation predictions.
-* Evaluate once on the untouched test set and generate the confusion matrix, ROC curve, classification report.
+* Evaluate once on the untouched test-set and generate the confusion matrix, ROC curve, classification report.
 
 **Milestone**: Trained model, and validation-selected threshold.
 
@@ -50,15 +52,15 @@ The solid color bar indicates the primary execution period for a core-task. A pa
 * Initialize SHAP with a training reference sample and generate global feature-importance summaries supported by the implementation.
 * Create PDP plots and show leading features.
 
-**Milestone:** Global explanation figures generated.
+**Milestone:** Global explanation figures using shap and pdp will be generated.
 
-**Week 6:** Local Explainability & Dashboarding
+**Week 6:** Local Explainability & Dashboarding(result exporting)
 **Focus:** Finish Phase 6 and execute Phase 7
 * Generate local SHAP and LIME explanations for a selected customer.
 * Collect explainable plots in the dashboard exporter.
 * Apply consistent visual styling, run the pipeline end-to-end, and check output HTML, memory use, and error handling.
 
-**Milestone:** Reproducible end-to-end workflow and a styled HTML dashboard ready for demonstration.
+**Milestone:** End-to-end workflow and a styled HTML dashboard ready for demonstration.
 
 ## 4. Critical Path and Risk Management
 <img width="967" height="218" alt="image" src="https://github.com/user-attachments/assets/83ccdd15-1788-4a77-800b-561942662b9d" />
