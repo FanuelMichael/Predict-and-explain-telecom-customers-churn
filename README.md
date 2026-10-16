@@ -1,9 +1,9 @@
-# Six-Week Project Plan: Telco Customer Churn Prediction
+# Project Plan: Telco Customer Churn Prediction
 
 ## 1. Project Overview
 This plan describes the implementation workflow for the Telcom Customer Churn prediction project. The six-week schedule below shows the seven Gantt-chart task names in sequential order.
 
-## 2. Six-Week Gantt Chart
+## 2. Gantt Chart
 
 The solid color bar indicates the primary execution period for a core-task. A pale tint indicates continuation of tasks.
 <img width="876" height="322" alt="image" src="https://github.com/user-attachments/assets/8df23c24-9d43-4773-94ce-c7585a5996a0" />
