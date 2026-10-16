@@ -4,7 +4,7 @@ This plan describes the implementation workflow for the Telcom Customer Churn pr
 
 #  2. Gantt Chart
 The solid color bar (●) indicates the primary execution period for a core task. A pale tint (>) indicates continuation or overlapping of tasks.
-<img width="1345" height="482" alt="image" src="https://github.com/user-attachments/assets/9920a291-d881-43a0-9d15-2e698817ba6e" />
+<img width="1343" height="473" alt="image" src="https://github.com/user-attachments/assets/1e5a2397-960d-4409-aea4-ff0f9021a143" />
 
 #  3. Phase-by-Phase Execution Plan
 #  Phase 1 & 2: Data Foundations (Oct 16 – Oct 23)
