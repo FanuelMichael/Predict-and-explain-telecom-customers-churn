@@ -51,10 +51,10 @@ Focus: First part of Phase 6
 
 Milestone: Global explanation figures using shap and pdp will be generated.
 
-#  Phase 6 (Part 2) & 7: Local Explainability & Dashboarding (Nov 21 – Dec 20)
+#  Phase 6 (Part 2) & 7: Local Explainability & reporting (Nov 21 – Dec 20)
 Focus: Finish Phase 6 and execute Phase 7
 * Generate local SHAP and LIME explanations for a selected customer.
 * Collect explainable plots in the dashboard exporter.
 * Apply consistent visual styling, run the pipeline end-to-end, and check output HTML, memory use, and error handling.
 
-Milestone: End-to-end workflow and a styled HTML dashboard ready for demonstration.
+Milestone: End-to-end workflow and a styled HTML report ready for demonstration.
