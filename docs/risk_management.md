@@ -1,4 +1,4 @@
-# Telco Customer Churn - Risk Management Plan
+# Telcom Customer Churn - Risk Management Plan
 
 ## 1. Methodology and Risk Appetite
 This document outlines the risk management strategy for the Telco Customer Churn prediction project. Risks are evaluated using a standard **Probability (P) × Impact (I) = Score (S)** matrix, where P and I are scored from 1 to 5.
