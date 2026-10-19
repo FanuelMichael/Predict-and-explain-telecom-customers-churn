@@ -11,29 +11,31 @@ def data_analysis(file_path):
     df = pd.read_csv(file_path)
 
     print("Number of customers, Number of columns/features: " + str(df.shape))
-    print("---------Check Dataset features data types-----------\n" + str(df.info()))
+    print("\nDataset features data types:")
+    print(df.info())
+
+    print("\nDataset first 5 rows:\n" + str(df.head()))
+    print("\nDataset bottom 5 rows:\n" + str(df.tail()))
 
     df.drop(columns=['customerID'], inplace=True)
     df['TotalCharges'] = pd.to_numeric(df['TotalCharges'], errors='coerce')
     df['TotalCharges'] = df['TotalCharges'].fillna(df['TotalCharges'].median())
 
-    print("Check missing values features:\n" + str(df.isnull().sum()))
-    print("Dataset first 5 rows:\n" + str(df.head()))
-    print("Dataset bottom 5 rows:\n" + str(df.tail()))
     # --------------numerical and categorical columns----------------------
     global num_cols,cat_cols
     num_cols = df.select_dtypes(include=["int64", "float64"]).columns.tolist()
     cat_cols = df.select_dtypes(include=["object"]).columns.tolist()
-    print("Numerical columns:\n" + str(num_cols))
-    print("Categorical columns:\n" + str(cat_cols))
-    print("Dataset features unique values:\n" + str(df.nunique()))
-    print("Dataset summary statistics of numerical columns\n" + str(df.describe()))
+    print("\nNumerical columns:\n" + str(num_cols))
+    print("\nCategorical columns:\n" + str(cat_cols))
+    print("\nDataset features unique values:\n" + str(df.nunique()))
+    print("\nDataset summary statistics of numerical columns\n" + str(df.describe()))
     global eda_plot_df
     eda_plot_df = df.copy()
 
     # ------------------------Method calls for designing Plots-------------------------------
     plot_plots_recursive(step=1, df=eda_plot_df, num_cols=num_cols)
     plot_categorical_plots(cat_cols, eda_plot_df, 0, 3, 7)
+    print("\nFor the graphical exploratory dataset analysis read inside a file called data/data_analysis.\n")
 
 def plot_plots_recursive(step, df, num_cols, max_steps=2):
     # Base case: stop after Plot 2
@@ -58,7 +60,7 @@ def plot_plots_recursive(step, df, num_cols, max_steps=2):
         axes[2].set_xticklabels(axes[2].get_xticklabels(), rotation=45, ha='right')
         axes[2].set_title('3. Correlation Heatmap of Numerical Features',fontsize=10, pad=5)
 
-        plt.tight_layout(rect=[0, 0.03, 1, 0.94])
+        plt.tight_layout(rect=(0, 0.03, 1, 0.94))
         plt.show()
     # ---------------------- Plot 2 ----------------------
     if step == 2:
