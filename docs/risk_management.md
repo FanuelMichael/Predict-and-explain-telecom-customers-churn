@@ -5,11 +5,11 @@ This document outlines the risk management strategy for the Telco Customer Churn
 
 ## Probability x Impact Matrix
 
-<img width="1122" height="396" alt="image" src="https://github.com/user-attachments/assets/a2f9a107-d7ca-4497-8c78-60f1719d48d6" />
+<img width="1118" height="385" alt="image" src="https://github.com/user-attachments/assets/3ea8c97d-2a4a-4a4f-8f25-0422949c829b" />
 
 *   🔴 **Critical (15–25):** Act now. Requires immediate action plans.
-*   🟠 **High (8–14):** Plan a response.
-*   🟡 **Medium (4–7):** Watch and monitor.
+*   🟠 **High (9–14):** Plan a response.
+*   🟡 **Medium (4–8):** Watch and monitor.
 *   🟢 **Low (1–3):** Accept and note.
 
 **Risk Appetite:** The team accepts a model that only matches baselines (as the primary product is the explainability), but does *not* accept invalid results (data leakage), missed deadlines, or unsupported claims.
@@ -18,7 +18,7 @@ This document outlines the risk management strategy for the Telco Customer Churn
 ## 2. Risk Register table
 Categories: Tech, People, Data, Market, Legal, Dependencies. P = probability, I = impact, S = score.
 Responses: Avoid, Reduce, Transfer, Accept.
-<img width="1236" height="803" alt="image" src="https://github.com/user-attachments/assets/6a897020-8053-4b7a-8447-1942bdaff94d" />
+<img width="1242" height="803" alt="image" src="https://github.com/user-attachments/assets/09d07ce0-7301-4a79-aa80-89c5251f5b0c" />
 
 ## 3. Detailed Risk & Mitigation Strategies
 
@@ -41,9 +41,9 @@ Responses: Avoid, Reduce, Transfer, Accept.
 *   **Mitigation:** Close plots after saving, avoid clearing the active model session before explanations are finished, and run expensive explainers sequentially.
 
 ### R5 - Dashboard Consistency
-*   **Category:** Tech | **Score:** 4 (Low) | **Response:** Reduce | **Owner:** XAI Lead
-*   **Rationale:** The export logic is simple, but list lengths can drift when a figure is skipped or a `None` is returned, leading to mislabelled plots.
-*   **Mitigation:** Keep the figure list and plot-name list synchronized. Use safe fallback names, and verify that every plot appears exactly once in the export.
+*   **Category:** Tech | **Score:** 8 (Medium) | **Response:** Reduce | **Owner:** XAI Lead
+*   **Rationale:** The export logic is simple, but list lengths can drift when a figure is skipped or a `None` is returned, leading to misinformation (mislabelled plots).
+*   **Mitigation:** Keep the plots list and plot-name list synchronized. Use safe fallback names, and verify that every plot appears exactly once in the final exported report.
 
 ### R6 - Hybrid Gains Nothing Over Baseline
 *   **Category:** Tech | **Score:** 16 (Critical) | **Response:** Reduce | **Owner:** Model Lead
@@ -86,7 +86,7 @@ Responses: Avoid, Reduce, Transfer, Accept.
 *   **Mitigation:** Use other open public website dataset.
 
 ### R14 - Data Loss
-*   **Category:** Tech | **Score:** 8 (High) | **Response:** Reduce | **Owner:** Deploy Lead
+*   **Category:** Tech | **Score:** 10 (High) | **Response:** Reduce | **Owner:** Deploy Lead
 *   **Rationale:** Local failures happen and data loss would block training, evaluation, and reporting.
 *   **Mitigation:** Back up dataset in multi-alternatives drives.
 
