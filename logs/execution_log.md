@@ -15,4 +15,6 @@ This log captures the successful initial execution of the main pipeline, focusin
 <img width="1220" height="145" alt="image" src="https://github.com/user-attachments/assets/465b84ef-0b55-4b8c-a78c-74ebfaf31ad9" />
 <img width="1267" height="45" alt="image" src="https://github.com/user-attachments/assets/7603f3e3-885b-4503-8e3b-3bcdaf12b85d" />
 <img width="348" height="617" alt="image" src="https://github.com/user-attachments/assets/5c5b60b9-b8f6-4798-9384-aeb101184440" />
-<img width="1062" height="418" alt="image" src="https://github.com/user-attachments/assets/18ee2345-83bb-4dae-9b40-f01318a365b8" />
+<img width="1033" height="333" alt="image" src="https://github.com/user-attachments/assets/c2d8d415-0355-4bf8-8fda-691ae904bc30" />
+<img width="1061" height="232" alt="image" src="https://github.com/user-attachments/assets/87d1f409-e0a5-478f-bb74-3d79fdf4956b" />
+
