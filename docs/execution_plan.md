@@ -8,31 +8,34 @@ The solid color bar (●) indicates the primary execution period for a core task
 
 #  3. Phase-by-Phase Execution Plan
 #  Phase 1 & 2: Data Foundations (Oct 16 – Oct 23)
-Focus Phase 1 and the first part of Phase 2
+Focus Phase 1, start reporting and the first part of Phase 2
 * Search open public telecom customer churn dataset.
-* Load telecommunication customer dataset and verify expected columns and target labels.
+* Load telecommunication customer dataset and analyse expected columns and target labels.
+* Document dataset analysis report.
 * Inspect missing values and data types; convert numeric features to numeric.
 * Review class balance and feature distributions.
 
 Milestone: Dataset will be loaded and data-quality checks will be documented; preprocessing pipeline will also be ready.
 
 #  Phase 2 & 3: Feature Engineering & Model Architecture (Oct 24 – Oct 30)
-Focus: Finish Phase 2 and begin Phase 3
+Focus: Finish Phase 2, continue reporting and begin Phase 3
 * Split rows into stratified training, and test partitions.
 * Impute missing values (fit on training set only).
 * Preprocess (Impute missing values, One-Hot Encode categorical variables).
 * StandardScaler (fit and transform in train data).
 * Apply SMOTE to the training partition only; keep validation/test data untouched.
 * Prepare model tensors and build the parallel 1D CNN and BiLSTM branches with HybridAttention.
+* Continue reporting minority classes oversampling using SMOTE to the webpage final result report.
 
 Milestone: Leakage-aware data partitions and a compiling hybrid architecture.
 
 #  Phase 3 & 4: Model Training & Evaluation (Oct 31 – Nov 06)
-Focus: Finish Phase 3 and execute Phase 4
+Focus: Finish Phase 3, continue reporting and execute Phase 4
 * Train the hybrid model using the training partition.
 * Tune model settings using validation performance.
 * Select the classification threshold using validation predictions.
 * Evaluate once on the untouched test set and generate the confusion matrix, ROC curve, classification report.
+* Continue reporting this classification report to the webpage final result report.
 
 Milestone: Trained model, and validation-selected threshold.
 
@@ -57,4 +60,4 @@ Focus: Finish Phase 6 and execute Phase 7
 * Collect explainable plots in the dashboard exporter.
 * Apply consistent visual styling, run the pipeline end-to-end, and check output HTML, memory use, and error handling.
 
-Milestone: End-to-end workflow and a styled HTML report ready for demonstration.
+Milestone: End-to-end workflow and a styled HTML webpage report ready for demonstration.
