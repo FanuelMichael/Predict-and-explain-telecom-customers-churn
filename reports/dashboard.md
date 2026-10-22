@@ -1,4 +1,4 @@
-# Telecom customers churn prediction and explainability dashboard
+# Telecom customers churn prediction and explainability results report
 
 ### ♦ Class distribution before and after SMOTE ♦
 
