@@ -40,24 +40,26 @@ Focus: Finish Phase 3, continue reporting and execute Phase 4
 Milestone: Trained model, and validation-selected threshold.
 
 #  Phase 4 & 5: Baseline Comparison (Nov 07 – Nov 13)
-Focus: Finish Phase 4 and execute Phase 5
+Focus: Finish Phase 4, continue reporting and execute Phase 5
 * Train standalone CNN and BiLSTM baselines using the same training-only resampled data.
 * Evaluate each baseline model on the same untouched test set.
 * Compare Accuracy, Precision, Recall, F1-score, and ROC-AUC in a consistently formatted results table.
+* Continue reporting these metrics result report of baseline models to the webpage final result report.
 
 Milestone: Fair comparison of the hybrid model and baseline models.
 
 #  Phase 6 (Part 1): Global Explainability (Nov 14 – Nov 20)
-Focus: First part of Phase 6
+Focus: First part of Phase 6 and continue reporting
 * Initialize SHAP with a training reference sample and generate global feature-importance summaries supported by the implementation.
 * Create PDP plots and show leading features.
+* Continue reporting the result of SHAP and PDP result report to the webpage final result report.
 
 Milestone: Global explanation figures using shap and pdp will be generated.
 
 #  Phase 6 (Part 2) & 7: Local Explainability & reporting (Nov 21 – Dec 20)
 Focus: Finish Phase 6 and execute Phase 7
 * Generate local SHAP and LIME explanations for a selected customer.
-* Collect explainable plots in the dashboard exporter.
-* Apply consistent visual styling, run the pipeline end-to-end, and check output HTML, memory use, and error handling.
+* * Apply consistent visual styling, run the pipeline end-to-end, and check output HTML, memory use, and error handling.
+* Continue reporting these SHAP and LIME result report to the webpage final result report.
 
 Milestone: End-to-end workflow and a styled HTML webpage report ready for demonstration.
