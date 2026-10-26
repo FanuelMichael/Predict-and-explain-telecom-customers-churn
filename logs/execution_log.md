@@ -1,6 +1,6 @@
 ## Initial Execution - Data Loading & Inspection
 
-**Module Tested:** `Main.py` (Dataset Analysis, Data preprocessing)
+**Module Tested:** `Main.py` (Dataset Analysis, Data preprocessing, Model development)
 
 **Status:** ✅ Success (Exit code 0)
 
@@ -16,5 +16,10 @@ This log captures the successful initial execution of the main pipeline, focusin
 <img width="1267" height="45" alt="image" src="https://github.com/user-attachments/assets/7603f3e3-885b-4503-8e3b-3bcdaf12b85d" />
 <img width="348" height="617" alt="image" src="https://github.com/user-attachments/assets/5c5b60b9-b8f6-4798-9384-aeb101184440" />
 <img width="1033" height="333" alt="image" src="https://github.com/user-attachments/assets/c2d8d415-0355-4bf8-8fda-691ae904bc30" />
-<img width="1061" height="232" alt="image" src="https://github.com/user-attachments/assets/87d1f409-e0a5-478f-bb74-3d79fdf4956b" />
+<img width="1758" height="472" alt="image" src="https://github.com/user-attachments/assets/e68450a4-df1f-4676-82f8-46708e80731e" />
+<img width="1748" height="316" alt="image" src="https://github.com/user-attachments/assets/f1780536-6b87-433d-81bc-27eb239b0b2b" />
+<img width="1748" height="360" alt="image" src="https://github.com/user-attachments/assets/9ae92d95-15d0-4da5-8815-393ff397ce46" />
+<img width="1756" height="476" alt="image" src="https://github.com/user-attachments/assets/8bfe25fa-87f8-4d56-a679-350a721edac0" />
+<img width="1765" height="583" alt="image" src="https://github.com/user-attachments/assets/41778cd8-f9c6-43c7-b1c8-3380930f1347" />
+
 
