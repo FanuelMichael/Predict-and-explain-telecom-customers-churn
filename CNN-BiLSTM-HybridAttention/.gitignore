@@ -1,0 +1,14 @@
+# Virtual Environment
+.venv/
+venv/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Data / Outputs (Optional, but recommended if files are large)
+*.csv
+*.pkl
+*.h5
+result_report.html

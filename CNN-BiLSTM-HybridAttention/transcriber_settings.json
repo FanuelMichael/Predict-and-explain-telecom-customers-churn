@@ -1,0 +1,9 @@
+{
+  "export_docx": 1,
+  "export_srt": 1,
+  "translate": 1,
+  "model_size": "base",
+  "device": "cpu",
+  "compute_type": "float32",
+  "output_dir": "same"
+}
