@@ -254,6 +254,13 @@ def get_customer_profile(customer_index: int):
     html_content = f"<html><body><h2>Customer Original Profile (Index {customer_index})</h2><img src='data:image/png;base64,{img_base64}'/></body></html>"
     return HTMLResponse(content=html_content)
 
+@app.get("/api/customer-data/{customer_index}")
+def get_customer_json_data(customer_index: int):
+    if customer_index < 0 or customer_index >= len(ml_state["indices_test"]):
+        raise HTTPException(status_code=400, detail="Invalid index.")
+
+    raw_data = ml_state["processor"].get_customer_original_data(customer_index, ml_state["indices_test"])
+    return raw_data
 
 @app.get("/full-report/{customer_index}")
 def get_full_report(customer_index: int):
@@ -327,6 +334,110 @@ def get_full_report(customer_index: int):
     """
     return HTMLResponse(content=html_content)
 
+
+@app.get("/custom-ui", response_class=HTMLResponse)
+def custom_ui():
+    html_content = """
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Customer Selection Form</title>
+        <style>
+            body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; padding: 40px; }
+            .container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+            h2 { color: #1e3a8a; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; }
+            .input-group { margin-bottom: 20px; }
+            label { font-weight: bold; color: #334155; }
+            input[type="number"] { padding: 8px; font-size: 16px; width: 100px; margin-left: 10px; border: 1px solid #cbd5e1; border-radius: 4px; }
+            button { padding: 8px 16px; font-size: 16px; cursor: pointer; border: none; border-radius: 4px; font-weight: bold; color: white; }
+            .btn-ok { background-color: #3b82f6; margin-left: 10px; }
+            .btn-ok:hover { background-color: #2563eb; }
+            .btn-predict { background-color: #10b981; float: right; display: none; margin-top: 20px; }
+            .btn-predict:hover { background-color: #059669; }
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; display: none; }
+            th, td { padding: 12px; text-align: left; border-bottom: 1px solid #e2e8f0; }
+            th { background-color: #f8fafc; color: #1e293b; font-weight: bold; }
+            tr:nth-child(even) { background-color: #f8fafc; }
+            .error { color: #ef4444; margin-top: 10px; font-weight: bold; display: none; }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h2>Customer Selection and Profile</h2>
+
+            <div class="input-group">
+                <label>Enter index (0 to 40):</label>
+                <input type="number" id="customerIndex" min="0" max="40" value="0">
+                <button class="btn-ok" onclick="fetchCustomer()">OK</button>
+            </div>
+
+            <div id="errorMsg" class="error"></div>
+
+            <table id="profileTable">
+                <thead>
+                    <tr>
+                        <th>Feature Name</th>
+                        <th>Original Value</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody"></tbody>
+            </table>
+
+            <button class="btn-predict" id="predictBtn" onclick="openReport()">Predict this customer</button>
+            <div style="clear:both;"></div>
+        </div>
+
+        <script>
+            let currentIndex = 0;
+
+            async function fetchCustomer() {
+                const index = document.getElementById('customerIndex').value;
+                const errorDiv = document.getElementById('errorMsg');
+                const table = document.getElementById('profileTable');
+                const tbody = document.getElementById('tableBody');
+                const predictBtn = document.getElementById('predictBtn');
+
+                // Reset UI
+                errorDiv.style.display = 'none';
+                table.style.display = 'none';
+                predictBtn.style.display = 'none';
+                tbody.innerHTML = '';
+
+                try {
+                    const response = await fetch(`/api/customer-data/${index}`);
+
+                    if (!response.ok) {
+                        throw new Error("Invalid index. Please enter a number between 0 and 40.");
+                    }
+
+                    const data = await response.json();
+                    currentIndex = index;
+
+                    // Populate table
+                    for (const [key, value] of Object.entries(data)) {
+                        const row = `<tr><td>${key}</td><td>${value}</td></tr>`;
+                        tbody.innerHTML += row;
+                    }
+
+                    // Show table and predict button
+                    table.style.display = 'table';
+                    predictBtn.style.display = 'block';
+
+                } catch (error) {
+                    errorDiv.textContent = error.message;
+                    errorDiv.style.display = 'block';
+                }
+            }
+
+            function openReport() {
+                // Open the report in a new tab
+                window.open(`/full-report/${currentIndex}`, '_blank');
+            }
+        </script>
+    </body>
+    </html>
+    """
+    return HTMLResponse(content=html_content)
 
 if __name__ == "__main__":
     import uvicorn
