@@ -159,6 +159,36 @@ class CustomerRequest(BaseModel):
     customer_index: int
 
 
+# ==========================================
+# 1. The missing Table Generator Function
+# ==========================================
+def create_customer_profile_figure(customer_dict):
+    fig, ax = plt.subplots(figsize=(10, 8), dpi=150)
+    ax.axis("off")
+    keys = list(customer_dict.keys())
+    values = [str(v) for v in customer_dict.values()]
+    table_data = list(zip(keys, values))
+
+    table = ax.table(cellText=table_data, colLabels=["Feature", "Value"], loc="center", cellLoc="left")
+    table.auto_set_font_size(False)
+    table.set_fontsize(10)
+    table.scale(1.1, 1.6)
+
+    for (row, col), cell in table.get_celld().items():
+        if row == 0:
+            cell.set_text_props(weight='bold', color='white', fontsize=11)
+            cell.set_facecolor('#1E293B')
+            cell.set_edgecolor('#1E293B')
+        else:
+            cell.set_facecolor('#F8FAFC' if row % 2 == 0 else '#FFFFFF')
+            cell.set_edgecolor('#E2E8F0')
+            cell.set_text_props(color='#334155')
+            if col == 0:
+                cell.set_text_props(weight='bold', color='#0F172A')
+    plt.close(fig)
+    return fig
+
+
 @app.get("/")
 def read_root():
     return {"message": "Welcome to the CNN-BiLSTM Hybrid Attention API. Use POST /predict to get a prediction."}
@@ -208,6 +238,93 @@ def get_pdp_explanation():
     fig = ml_state["pdp"].plot_pdp_grid(top_features)
     img_base64 = fig_to_base64(fig)
     html_content = f"<html><body><h2>Partial Dependence Plots (Top 4 Features)</h2><img src='data:image/png;base64,{img_base64}'/></body></html>"
+    return HTMLResponse(content=html_content)
+
+
+@app.get("/customer/profile/{customer_index}")
+def get_customer_profile(customer_index: int):
+    if customer_index < 0 or customer_index >= len(ml_state["indices_test"]):
+        raise HTTPException(status_code=400, detail="Invalid index.")
+
+    # Generate the customer profile dynamically for this specific index
+    raw_data = ml_state["processor"].get_customer_original_data(customer_index, ml_state["indices_test"])
+    fig_cust = create_customer_profile_figure(raw_data)
+    img_base64 = fig_to_base64(fig_cust)
+
+    html_content = f"<html><body><h2>Customer Original Profile (Index {customer_index})</h2><img src='data:image/png;base64,{img_base64}'/></body></html>"
+    return HTMLResponse(content=html_content)
+
+
+@app.get("/full-report/{customer_index}")
+def get_full_report(customer_index: int):
+    logger.info(f"Generating Full XAI Report for Customer {customer_index}")
+
+    # 1. Generate all figures
+    raw_data = ml_state["processor"].get_customer_original_data(customer_index, ml_state["indices_test"])
+    fig_cust = create_customer_profile_figure(raw_data)
+
+    fig_shap_summary = ml_state["shap"].plot_summary()
+    fig_pdp = ml_state["pdp"].plot_pdp_grid(ml_state["shap_top_features"][:4])
+    fig_shap_local = ml_state["shap"].plot_waterfall(cust_actual_id=f"Index {customer_index}",
+                                                     sample_idx=customer_index)
+    fig_lime = ml_state["lime"].lime_bar_chart_plot(cust_actual_id=f"Index {customer_index}", sample_idx=customer_index)
+
+    # 2. Convert to Base64
+    b64_cust = fig_to_base64(fig_cust)
+    b64_shap_summary = fig_to_base64(fig_shap_summary)
+    b64_pdp = fig_to_base64(fig_pdp)
+    b64_shap_local = fig_to_base64(fig_shap_local)
+    b64_lime = fig_to_base64(fig_lime)
+
+    # 3. Build HTML with Custom Order and Styling
+    html_content = f"""
+    <html>
+    <head>
+        <style>
+            body {{ font-family: Arial, sans-serif; background-color: #f8f9fa; padding: 20px; margin: 0 auto; max-width: 1200px; }}
+            h1 {{ text-align: center; color: #1e3a8a; border-bottom: 4px solid #1e3a8a; padding-bottom: 10px; }}
+            h2 {{ color: #ffffff; background-color: #3b82f6; padding: 10px 15px; border-radius: 5px; margin-top: 50px; }}
+            h3 {{ color: #1e3a8a; border-bottom: 2px solid #cbd5e1; padding-bottom: 5px; margin-top: 30px; }}
+            .plot-container {{ text-align: center; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 30px; }}
+            img {{ max-width: 100%; height: auto; }}
+        </style>
+    </head>
+    <body>
+        <h1>CNN-BiLSTM-HybridAttention XAI Dashboard</h1>
+        <h3 style="text-align: center; color: #475569;">Customer Index: {customer_index}</h3>
+
+        <h2>Customer Profile (Context)</h2>
+        <div class="plot-container">
+            <img src="data:image/png;base64,{b64_cust}" alt="Customer Profile">
+        </div>
+
+        <h2>1. Global Explainability (Model Behavior)</h2>
+
+        <h3>1.1. SHAP Summary Plot</h3>
+        <div class="plot-container">
+            <img src="data:image/png;base64,{b64_shap_summary}" alt="SHAP Summary">
+        </div>
+
+        <h3>1.2. Partial Dependence Plots (PDP)</h3>
+        <div class="plot-container">
+            <img src="data:image/png;base64,{b64_pdp}" alt="PDP">
+        </div>
+
+        <h2>2. Local Explainability (Customer Specific)</h2>
+
+        <h3>2.1. SHAP Waterfall Plot</h3>
+        <div class="plot-container">
+            <img src="data:image/png;base64,{b64_shap_local}" alt="SHAP Waterfall">
+        </div>
+
+        <h3>2.2. LIME Bar Chart</h3>
+        <div class="plot-container">
+            <img src="data:image/png;base64,{b64_lime}" alt="LIME Bar Chart">
+        </div>
+
+    </body>
+    </html>
+    """
     return HTMLResponse(content=html_content)
 
 
