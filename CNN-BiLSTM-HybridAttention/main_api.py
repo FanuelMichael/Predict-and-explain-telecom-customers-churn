@@ -293,11 +293,6 @@ def get_full_report(customer_index: int):
         <h1>CNN-BiLSTM-HybridAttention XAI Dashboard</h1>
         <h3 style="text-align: center; color: #475569;">Customer Index: {customer_index}</h3>
 
-        <h2>Customer Profile (Context)</h2>
-        <div class="plot-container">
-            <img src="data:image/png;base64,{b64_cust}" alt="Customer Profile">
-        </div>
-
         <h2>1. Global Explainability (Model Behavior)</h2>
 
         <h3>1.1. SHAP Summary Plot</h3>
@@ -311,6 +306,11 @@ def get_full_report(customer_index: int):
         </div>
 
         <h2>2. Local Explainability (Customer Specific)</h2>
+
+        <h3>Customer Profile (Context)</h3>
+        <div class="plot-container">
+            <img src="data:image/png;base64,{b64_cust}" alt="Customer Profile">
+        </div>
 
         <h3>2.1. SHAP Waterfall Plot</h3>
         <div class="plot-container">
