@@ -212,8 +212,8 @@ def predict(data: CustomerRequest):
 
 @app.get("/explain/shap/{customer_index}")
 def get_shap_explanation(customer_index: int):
-    if customer_index < 0 or customer_index >= 40:
-        raise HTTPException(status_code=400, detail="SHAP is computed only for indices 0-39.")
+    if customer_index < 0 or customer_index >= len(ml_state["X_test"]):
+        raise HTTPException(status_code=400, detail="Invalid index.")
 
     fig = ml_state["shap"].plot_waterfall(cust_actual_id=f"Index {customer_index}", sample_idx=customer_index)
     img_base64 = fig_to_base64(fig)
@@ -366,8 +366,8 @@ def custom_ui():
             <h2>Customer Selection and Profile</h2>
 
             <div class="input-group">
-                <label>Enter index (0 to 40):</label>
-                <input type="number" id="customerIndex" min="0" max="40" value="0">
+                <label>Enter index (0 to 1408):</label>
+                <input type="number" id="customerIndex" min="0" max="1408" value="0">
                 <button class="btn-ok" onclick="fetchCustomer()">OK</button>
             </div>
 
@@ -407,7 +407,7 @@ def custom_ui():
                     const response = await fetch(`/api/customer-data/${index}`);
 
                     if (!response.ok) {
-                        throw new Error("Invalid index. Please enter a number between 0 and 40.");
+                        throw new Error("Invalid index. Please enter a number between 0 and 1408.");
                     }
 
                     const data = await response.json();
