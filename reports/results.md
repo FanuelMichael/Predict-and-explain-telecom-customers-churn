@@ -9,6 +9,17 @@ To address class imbalance without data leakage, the Synthetic Minority Over-sam
 <img width="1408" height="652" alt="image" src="https://github.com/user-attachments/assets/4a00335c-ebd1-48b3-b71c-a633a9f8a6f7" />
 <img width="1410" height="238" alt="image" src="https://github.com/user-attachments/assets/bb44451d-f0e3-417b-94a2-07128ce68630" />
 
+### Business Context & Core Model Metric (One Metric That Matters(OMTM))
+
+To evaluate the success of our hybrid model, we must look beyond raw accuracy and understand the business cost of errors based on our confusion matrix. In telecom churn, the cost of a **False Positive (265)** versus a **False Negative (79)** is drastically different:
+
+* **False Negative** (Predicting a customer will stay, but they actually leave): This is **highly expensive**. The company loses the customer's entire lifetime value (potentially hundreds of dollars).
+* **False Positive** (Predicting a customer will leave, but they stay): This is **moderately expensive**. The company might waste a small retention incentive (e.g., a $10 discount coupon) on someone who wasn't going to leave anyway.
+
+**The Chosen Metric:** Because missing a churner (False Negative) is the most costly mistake, our primary metric is **Recall (Sensitivity)** for the Churn class, supported by the **F1-Score** and **PR-AUC**.
+
+**Why this approach?** Our goal is to catch as many actual churners as possible to maximize retention efforts. To achieve this high Recall, our pipeline utilizes **SMOTE** (Synthetic Minority Over-sampling Technique) to balance the training data, combined with a **Focal Loss** function and optimized decision thresholds. Therefore, while our Accuracy is strong, **Recall and F1-Score** are the true measures of our model's business success.
+
 ### ♦ Classification Report and Confusion Matrix of baseline CNN ♦
 <img width="1675" height="677" alt="image" src="https://github.com/user-attachments/assets/a21e72fc-fe9d-462f-87ca-454ca65f07c4" />
 
