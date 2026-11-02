@@ -336,20 +336,27 @@ def get_full_report(customer_index: int):
 
 
 @app.get("/custom-ui", response_class=HTMLResponse)
+@app.get("/custom-ui", response_class=HTMLResponse)
 def custom_ui():
     html_content = """
     <!DOCTYPE html>
     <html>
     <head>
-        <title>Customer Selection Form</title>
+        <title>Telecom Churn XAI Dashboard</title>
         <style>
-            body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; padding: 40px; }
+            body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; padding: 40px; margin: 0; }
+
+            /* New Header Styling */
+            .header { text-align: center; margin-bottom: 40px; }
+            .header h1 { color: #1e3a8a; font-size: 32px; margin-bottom: 10px; font-weight: 700; }
+            .header p { color: #64748b; font-size: 18px; margin-top: 0; }
+
             .container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-            h2 { color: #1e3a8a; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; }
-            .input-group { margin-bottom: 20px; }
+            h2 { color: #1e3a8a; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; margin-top: 0; }
+            .input-group { margin-bottom: 20px; margin-top: 30px; }
             label { font-weight: bold; color: #334155; }
-            input[type="number"] { padding: 8px; font-size: 16px; width: 100px; margin-left: 10px; border: 1px solid #cbd5e1; border-radius: 4px; }
-            button { padding: 8px 16px; font-size: 16px; cursor: pointer; border: none; border-radius: 4px; font-weight: bold; color: white; }
+            input[type="number"] { padding: 10px; font-size: 16px; width: 120px; margin-left: 10px; border: 1px solid #cbd5e1; border-radius: 6px; }
+            button { padding: 10px 20px; font-size: 16px; cursor: pointer; border: none; border-radius: 6px; font-weight: bold; color: white; }
             .btn-ok { background-color: #3b82f6; margin-left: 10px; }
             .btn-ok:hover { background-color: #2563eb; }
             .btn-predict { background-color: #10b981; float: right; display: none; margin-top: 20px; }
@@ -362,6 +369,12 @@ def custom_ui():
         </style>
     </head>
     <body>
+        <!-- NEW HEADER SECTION -->
+        <div class="header">
+            <h1>Telecom Customer Churn Prediction & Explainability</h1>
+            <p>Powered by 1D CNN-BiLSTM Hybrid Attention Neural Network</p>
+        </div>
+
         <div class="container">
             <h2>Customer Selection and Profile</h2>
 
