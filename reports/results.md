@@ -18,7 +18,7 @@ To address class imbalance without data leakage, the Synthetic Minority Over-sam
 ### ♦ Models performance comparison table ♦
 <img width="1672" height="317" alt="image" src="https://github.com/user-attachments/assets/533eb9b8-388b-4317-a039-a376048d880a" />
 
-The comparative evaluation metrics Table computed based on the confusion matrices of hybrid and baseline models, demonstrates that the hybrid architecture achieves superior overall classification performance: Accuracy 76.65%, Precision 54.30%, Recall 75.94%, F1-score 63.32%. The hybrid model outperforms both standalone CNN and BiLSTM baselines across primary predictive benchmarks, while maintaining equal top-tier discrimination power (AUC 0.84) alongside CNN.
+The comparative evaluation metrics Table computed based on the confusion matrices of hybrid and baseline models, demonstrates that the hybrid architecture achieves superior overall classification performance: Accuracy 75.59%, Precision 52.68%, Recall 78.88%, F1-score 63.17%. The hybrid model outperforms both standalone CNN and BiLSTM baselines across primary predictive benchmarks, while maintaining equal top-tier discrimination power (AUC 0.84) alongside CNN.
 
 <img width="1817" height="98" alt="image" src="https://github.com/user-attachments/assets/46008707-aa8a-478b-b457-73207dbee26a" />
 
@@ -38,4 +38,4 @@ Subscribing to fiber-optic internet and opting for paperless billing both increa
 ### ♦ Selected customer original file for local explainability ♦
 <img width="1231" height="863" alt="image" src="https://github.com/user-attachments/assets/5b198d1c-e663-458d-9a45-4a21c2a68f1f" />
 
-
+The table above details the raw profile of customer 2034-GDRCN, who was selected to demonstrate local (customer-level) explainability using SHAP waterfall and LIME bar chart plots. This customer represents a classic high-risk churn profile: a female with a very short tenure (2 months) on a month-to-month contract, paying a relatively high monthly charge ($90.4) for Fiber optic internet without any tech support or online security. We selected, the actual churned customer file. We will see next how SHAP, and LIME explainable tools dissect this specific customer model prediction, by highlighting exactly what features are pushed the hybrid model's decision toward a churn probability.
