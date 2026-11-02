@@ -33,3 +33,9 @@ Longer tenure strongly reduces churn risk, whereas higher monthly charges increa
 <img width="1263" height="803" alt="image" src="https://github.com/user-attachments/assets/95d675d0-f695-4e5c-8200-e328f9cc8a32" />
 <img width="1262" height="666" alt="image" src="https://github.com/user-attachments/assets/7b2b258d-2474-4d29-98cc-60841adca14f" />
 Subscribing to fiber-optic internet and opting for paperless billing both increase the probability of churn. In contrast, having dependents strongly reduces churn risk. Furthermore, the effect of having multiple services is non-linear; churn risk peaks for customers with a few services (around 2 to 3) but steadily decreases as the total number of subscribed services grows toward 8. Overall, these marginal effects confirm that specific service choices like fiber-optic internet and paperless billing act as independent drivers that increase the probability of customer churn, whereas having dependents and subscribing to a high volume of services provide a protective, stabilizing effect.
+<img width="1841" height="76" alt="image" src="https://github.com/user-attachments/assets/ce0f9189-40ac-4f09-b017-cb7809a28217" />
+
+### ♦ Selected customer original file for local explainability ♦
+<img width="1231" height="863" alt="image" src="https://github.com/user-attachments/assets/5b198d1c-e663-458d-9a45-4a21c2a68f1f" />
+
+
