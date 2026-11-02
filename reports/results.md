@@ -43,3 +43,8 @@ The table above details the raw profile of customer 2034-GDRCN, who was selected
 ## ♦ SHAP waterfall plot ♦
 <img width="1240" height="925" alt="image" src="https://github.com/user-attachments/assets/856605c3-be76-4c17-8811-0c0f57b1296a" />
 
+The SHAP waterfall plot illustrates the local explainability for customer 2034-GDRCN, detailing exactly how the hybrid model reached its final prediction. Starting from the model's base expected value of 0.475, the final predicted churn probability increases to 0.577, successfully crossing the decision threshold to classify this customer as a churner.
+
+The red bars indicate features that increased the churn risk. The most significant driver was the customer's short tenure (-1.241), which alone added +0.03 to the probability. Secondary factors, including high MonthlyCharges (0.845), a Month-to-month contract, Fiber optic internet, and paying via Electronic check, each contributed +0.01 to the risk. The only feature that slightly reduced the prediction (blue bar) was the absence of MultipleLines.
+
+The SHAP values confirm that the model is correctly identifying a classic high-risk profile: a new customer locked into a flexible contract with high monthly costs.
