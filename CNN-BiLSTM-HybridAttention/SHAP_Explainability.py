@@ -74,13 +74,24 @@ class SHAPExplainer:
 
     # 2.---------------- SHAP local explainability-------------------
     # 1. SHAP Waterfall Plot------
-    def plot_waterfall(self,cust_actual_id='', sample_idx=0):
+    def plot_waterfall(self, cust_actual_id='', sample_idx=0):
         plt.figure(figsize=(10, 7))
-        explanation_to_plot = self.shap_exp[sample_idx]
+
+        # If the index is within the pre-computed background (first 40)
+        if sample_idx < len(self.shap_exp):
+            explanation_to_plot = self.shap_exp[sample_idx]
+        else:
+            # Compute SHAP on-the-fly for indices beyond 40
+            instance = self.X_test_2d[sample_idx]
+            explanation = self.explainer(instance.reshape(1, -1))[0]
+            explanation.feature_names = self.feature_names
+            explanation_to_plot = explanation
+
         explanation_to_plot.feature_names = self.feature_names
-        shap.plots.waterfall(explanation_to_plot,show=False)
+        shap.plots.waterfall(explanation_to_plot, show=False)
+
         # Center align the plot
-        plt.gca().set_position([0.3, 0.1, 0.6, 0.8])  # [left, bottom, width, height]
+        plt.gca().set_position([0.3, 0.1, 0.6, 0.8])
         plt.title(f"SHAP Waterfall Plot (customer id: {cust_actual_id})")
         fig = plt.gcf()
         plt.close(fig)

@@ -159,6 +159,36 @@ class CustomerRequest(BaseModel):
     customer_index: int
 
 
+# ==========================================
+# 1. The missing Table Generator Function
+# ==========================================
+def create_customer_profile_figure(customer_dict):
+    fig, ax = plt.subplots(figsize=(10, 8), dpi=150)
+    ax.axis("off")
+    keys = list(customer_dict.keys())
+    values = [str(v) for v in customer_dict.values()]
+    table_data = list(zip(keys, values))
+
+    table = ax.table(cellText=table_data, colLabels=["Feature", "Value"], loc="center", cellLoc="left")
+    table.auto_set_font_size(False)
+    table.set_fontsize(10)
+    table.scale(1.1, 1.6)
+
+    for (row, col), cell in table.get_celld().items():
+        if row == 0:
+            cell.set_text_props(weight='bold', color='white', fontsize=11)
+            cell.set_facecolor('#1E293B')
+            cell.set_edgecolor('#1E293B')
+        else:
+            cell.set_facecolor('#F8FAFC' if row % 2 == 0 else '#FFFFFF')
+            cell.set_edgecolor('#E2E8F0')
+            cell.set_text_props(color='#334155')
+            if col == 0:
+                cell.set_text_props(weight='bold', color='#0F172A')
+    plt.close(fig)
+    return fig
+
+
 @app.get("/")
 def read_root():
     return {"message": "Welcome to the CNN-BiLSTM Hybrid Attention API. Use POST /predict to get a prediction."}
@@ -182,8 +212,8 @@ def predict(data: CustomerRequest):
 
 @app.get("/explain/shap/{customer_index}")
 def get_shap_explanation(customer_index: int):
-    if customer_index < 0 or customer_index >= 40:
-        raise HTTPException(status_code=400, detail="SHAP is computed only for indices 0-39.")
+    if customer_index < 0 or customer_index >= len(ml_state["X_test"]):
+        raise HTTPException(status_code=400, detail="Invalid index.")
 
     fig = ml_state["shap"].plot_waterfall(cust_actual_id=f"Index {customer_index}", sample_idx=customer_index)
     img_base64 = fig_to_base64(fig)
@@ -210,6 +240,204 @@ def get_pdp_explanation():
     html_content = f"<html><body><h2>Partial Dependence Plots (Top 4 Features)</h2><img src='data:image/png;base64,{img_base64}'/></body></html>"
     return HTMLResponse(content=html_content)
 
+
+@app.get("/customer/profile/{customer_index}")
+def get_customer_profile(customer_index: int):
+    if customer_index < 0 or customer_index >= len(ml_state["indices_test"]):
+        raise HTTPException(status_code=400, detail="Invalid index.")
+
+    # Generate the customer profile dynamically for this specific index
+    raw_data = ml_state["processor"].get_customer_original_data(customer_index, ml_state["indices_test"])
+    fig_cust = create_customer_profile_figure(raw_data)
+    img_base64 = fig_to_base64(fig_cust)
+
+    html_content = f"<html><body><h2>Customer Original Profile (Index {customer_index})</h2><img src='data:image/png;base64,{img_base64}'/></body></html>"
+    return HTMLResponse(content=html_content)
+
+@app.get("/api/customer-data/{customer_index}")
+def get_customer_json_data(customer_index: int):
+    if customer_index < 0 or customer_index >= len(ml_state["indices_test"]):
+        raise HTTPException(status_code=400, detail="Invalid index.")
+
+    raw_data = ml_state["processor"].get_customer_original_data(customer_index, ml_state["indices_test"])
+    return raw_data
+
+@app.get("/full-report/{customer_index}")
+def get_full_report(customer_index: int):
+    logger.info(f"Generating Full XAI Report for Customer {customer_index}")
+
+    # 1. Generate all figures
+    raw_data = ml_state["processor"].get_customer_original_data(customer_index, ml_state["indices_test"])
+    fig_cust = create_customer_profile_figure(raw_data)
+
+    fig_shap_summary = ml_state["shap"].plot_summary()
+    fig_pdp = ml_state["pdp"].plot_pdp_grid(ml_state["shap_top_features"][:4])
+    fig_shap_local = ml_state["shap"].plot_waterfall(cust_actual_id=f"Index {customer_index}",
+                                                     sample_idx=customer_index)
+    fig_lime = ml_state["lime"].lime_bar_chart_plot(cust_actual_id=f"Index {customer_index}", sample_idx=customer_index)
+
+    # 2. Convert to Base64
+    b64_cust = fig_to_base64(fig_cust)
+    b64_shap_summary = fig_to_base64(fig_shap_summary)
+    b64_pdp = fig_to_base64(fig_pdp)
+    b64_shap_local = fig_to_base64(fig_shap_local)
+    b64_lime = fig_to_base64(fig_lime)
+
+    # 3. Build HTML with Custom Order and Styling
+    html_content = f"""
+    <html>
+    <head>
+        <style>
+            body {{ font-family: Arial, sans-serif; background-color: #f8f9fa; padding: 20px; margin: 0 auto; max-width: 1200px; }}
+            h1 {{ text-align: center; color: #1e3a8a; border-bottom: 4px solid #1e3a8a; padding-bottom: 10px; }}
+            h2 {{ color: #ffffff; background-color: #3b82f6; padding: 10px 15px; border-radius: 5px; margin-top: 50px; }}
+            h3 {{ color: #1e3a8a; border-bottom: 2px solid #cbd5e1; padding-bottom: 5px; margin-top: 30px; }}
+            .plot-container {{ text-align: center; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 30px; }}
+            img {{ max-width: 100%; height: auto; }}
+        </style>
+    </head>
+    <body>
+        <h1>CNN-BiLSTM-HybridAttention XAI Dashboard</h1>
+        <h3 style="text-align: center; color: #475569;">Customer Index: {customer_index}</h3>
+
+        <h2>1. Global Explainability (Model Behavior)</h2>
+
+        <h3>1.1. SHAP Summary Plot</h3>
+        <div class="plot-container">
+            <img src="data:image/png;base64,{b64_shap_summary}" alt="SHAP Summary">
+        </div>
+
+        <h3>1.2. Partial Dependence Plots (PDP)</h3>
+        <div class="plot-container">
+            <img src="data:image/png;base64,{b64_pdp}" alt="PDP">
+        </div>
+
+        <h2>2. Local Explainability (Customer Specific)</h2>
+
+        <h3>Customer Profile (Context)</h3>
+        <div class="plot-container">
+            <img src="data:image/png;base64,{b64_cust}" alt="Customer Profile">
+        </div>
+
+        <h3>2.1. SHAP Waterfall Plot</h3>
+        <div class="plot-container">
+            <img src="data:image/png;base64,{b64_shap_local}" alt="SHAP Waterfall">
+        </div>
+
+        <h3>2.2. LIME Bar Chart</h3>
+        <div class="plot-container">
+            <img src="data:image/png;base64,{b64_lime}" alt="LIME Bar Chart">
+        </div>
+
+    </body>
+    </html>
+    """
+    return HTMLResponse(content=html_content)
+
+
+@app.get("/custom-ui", response_class=HTMLResponse)
+def custom_ui():
+    html_content = """
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Customer Selection Form</title>
+        <style>
+            body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; padding: 40px; }
+            .container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+            h2 { color: #1e3a8a; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; }
+            .input-group { margin-bottom: 20px; }
+            label { font-weight: bold; color: #334155; }
+            input[type="number"] { padding: 8px; font-size: 16px; width: 100px; margin-left: 10px; border: 1px solid #cbd5e1; border-radius: 4px; }
+            button { padding: 8px 16px; font-size: 16px; cursor: pointer; border: none; border-radius: 4px; font-weight: bold; color: white; }
+            .btn-ok { background-color: #3b82f6; margin-left: 10px; }
+            .btn-ok:hover { background-color: #2563eb; }
+            .btn-predict { background-color: #10b981; float: right; display: none; margin-top: 20px; }
+            .btn-predict:hover { background-color: #059669; }
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; display: none; }
+            th, td { padding: 12px; text-align: left; border-bottom: 1px solid #e2e8f0; }
+            th { background-color: #f8fafc; color: #1e293b; font-weight: bold; }
+            tr:nth-child(even) { background-color: #f8fafc; }
+            .error { color: #ef4444; margin-top: 10px; font-weight: bold; display: none; }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h2>Customer Selection and Profile</h2>
+
+            <div class="input-group">
+                <label>Enter index (0 to 1408):</label>
+                <input type="number" id="customerIndex" min="0" max="1408" value="0">
+                <button class="btn-ok" onclick="fetchCustomer()">OK</button>
+            </div>
+
+            <div id="errorMsg" class="error"></div>
+
+            <table id="profileTable">
+                <thead>
+                    <tr>
+                        <th>Feature Name</th>
+                        <th>Original Value</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody"></tbody>
+            </table>
+
+            <button class="btn-predict" id="predictBtn" onclick="openReport()">Predict this customer</button>
+            <div style="clear:both;"></div>
+        </div>
+
+        <script>
+            let currentIndex = 0;
+
+            async function fetchCustomer() {
+                const index = document.getElementById('customerIndex').value;
+                const errorDiv = document.getElementById('errorMsg');
+                const table = document.getElementById('profileTable');
+                const tbody = document.getElementById('tableBody');
+                const predictBtn = document.getElementById('predictBtn');
+
+                // Reset UI
+                errorDiv.style.display = 'none';
+                table.style.display = 'none';
+                predictBtn.style.display = 'none';
+                tbody.innerHTML = '';
+
+                try {
+                    const response = await fetch(`/api/customer-data/${index}`);
+
+                    if (!response.ok) {
+                        throw new Error("Invalid index. Please enter a number between 0 and 1408.");
+                    }
+
+                    const data = await response.json();
+                    currentIndex = index;
+
+                    // Populate table
+                    for (const [key, value] of Object.entries(data)) {
+                        const row = `<tr><td>${key}</td><td>${value}</td></tr>`;
+                        tbody.innerHTML += row;
+                    }
+
+                    // Show table and predict button
+                    table.style.display = 'table';
+                    predictBtn.style.display = 'block';
+
+                } catch (error) {
+                    errorDiv.textContent = error.message;
+                    errorDiv.style.display = 'block';
+                }
+            }
+
+            function openReport() {
+                // Open the report in a new tab
+                window.open(`/full-report/${currentIndex}`, '_blank');
+            }
+        </script>
+    </body>
+    </html>
+    """
+    return HTMLResponse(content=html_content)
 
 if __name__ == "__main__":
     import uvicorn
