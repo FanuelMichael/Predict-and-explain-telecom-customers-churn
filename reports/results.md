@@ -52,3 +52,12 @@ The SHAP values confirm that the model is correctly identifying a classic high-r
 ## ♦ SHAP LIME plot explainability ♦
 <img width="1245" height="897" alt="image" src="https://github.com/user-attachments/assets/976c7693-168d-444e-b93a-d62a3277ee3c" />
 
+The LIME (Local Interpretable Model-agnostic Explanations) bar chart provides a secondary, model-agnostic validation of the local prediction for customer 2034-GDRCN.
+
+In this visualization, all top 10 features are represented by red bars pointing to the right, indicating that every single one of these factors pushed the model's prediction toward the "Churn" class. The length of the bar represents the magnitude of that feature's influence.
+
+Primary Drivers: Reinforcing the SHAP findings, the customer's very short tenure (scaled value <= -0.96) is by far the most dominant feature contributing to the churn prediction. This is closely followed by having a Month-to-month contract and high MonthlyCharges (scaled value > 0.83).
+
+Secondary Drivers: The absence of a Two year contract, having Fiber optic internet, and lacking add-on services like OnlineSecurity and TechSupport all contributed positively to the churn risk.
+
+The LIME explanation aligns perfectly with the SHAP waterfall plot, confirming the model's robustness. Both XAI methods agree that this customer is highly likely to churn due to being a new, high-paying customer on a flexible contract without protective service add-ons.
