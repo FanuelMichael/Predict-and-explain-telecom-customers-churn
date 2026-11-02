@@ -77,7 +77,7 @@ def prep_leakage_safe_data(X_train_raw, y_train, X_test_raw, val_size, processor
 def main(data_path='WA_Fn-UseC_-Telco-Customer-Churn.csv', random_state=42):
 
     print("===1. Telecom customer dataset analysis===:\n")
-    #data_analysis(file_path=data_path)
+    data_analysis(file_path=data_path)
 
     all_figures = []
 

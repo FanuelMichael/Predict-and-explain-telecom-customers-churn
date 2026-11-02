@@ -5,7 +5,6 @@ from io import BytesIO
 
 #=======================================================================================================
 def export_plots_to_html(figures, output_path="result_report.html"):
-
     html_parts = [
         "<html>",
         "<head>",
@@ -17,10 +16,17 @@ def export_plots_to_html(figures, output_path="result_report.html"):
         "</style>",
         "</head>",
         "<body>",
-        "<h1>Telecom customers churn prediction and explainability report</h1>"]
+        "<h1>Telecom customers churn prediction and explainability dashboard</h1>"]
     # Plots title names list
     plots_names = ["Class distribution before and after SMOTE",
-                   "Performance metrics, confusion matrix and ROC curve of the hybrid model"]
+                   "Performance metrics, confusion matrix and ROC curve of the hybrid model",
+                   "Classification Report and Confusion Matrix of CNN",
+                   "Classification Report and Confusion Matrix of BiLSTM",
+                   "Models performance comparison table","SHAP summary plot",
+                   "Partial dependence plot(PDP): plot-1",
+                   "Partial dependence plot(PDP): plot-2",
+                   "Selected customer original file for local explainability",
+                   "SHAP waterfall plot ","LIME bar chart "]
 
     for i in range(len(figures)):
         fig = figures[i]
