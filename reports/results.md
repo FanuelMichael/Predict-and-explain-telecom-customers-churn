@@ -39,3 +39,7 @@ Subscribing to fiber-optic internet and opting for paperless billing both increa
 <img width="1231" height="863" alt="image" src="https://github.com/user-attachments/assets/5b198d1c-e663-458d-9a45-4a21c2a68f1f" />
 
 The table above details the raw profile of customer 2034-GDRCN, who was selected to demonstrate local (customer-level) explainability using SHAP waterfall and LIME bar chart plots. This customer represents a classic high-risk churn profile: a female with a very short tenure (2 months) on a month-to-month contract, paying a relatively high monthly charge ($90.4) for Fiber optic internet without any tech support or online security. We selected, the actual churned customer file. We will see next how SHAP, and LIME explainable tools dissect this specific customer model prediction, by highlighting exactly what features are pushed the hybrid model's decision toward a churn probability.
+
+## ♦ SHAP waterfall plot ♦
+<img width="1240" height="925" alt="image" src="https://github.com/user-attachments/assets/856605c3-be76-4c17-8811-0c0f57b1296a" />
+
