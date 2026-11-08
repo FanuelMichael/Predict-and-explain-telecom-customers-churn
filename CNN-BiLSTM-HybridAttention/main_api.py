@@ -43,25 +43,25 @@ class JsonFormatter(logging.Formatter):
             log_record["exception"] = self.formatException(record.exc_info)
         return json.dumps(log_record)
 
-
 logger = logging.getLogger("churn_api")
 logger.setLevel(logging.INFO)
 console_handler = logging.StreamHandler()
 console_handler.setFormatter(JsonFormatter())
 logger.addHandler(console_handler)
 
-try:
-    from logging_loki import LokiHandler
+if os.getenv("ENABLE_LOKI", "false").lower() == "true":
+    try:
+        from logging_loki import LokiHandler
 
-    loki_handler = LokiHandler(
-        url=os.getenv("LOKI_URL", "http://loki:3100/loki/api/v1/push"),
-        tags={"application": "cnn-bilstm-attention-api", "environment": "docker"},
-        version="1",
-    )
-    loki_handler.setFormatter(JsonFormatter())
-    logger.addHandler(loki_handler)
-except Exception as e:
-    logger.warning(f"Loki handler not attached: {e}")
+        loki_handler = LokiHandler(
+            url=os.getenv("LOKI_URL", "http://loki:3100/loki/api/v1/push"),
+            tags={"application": "cnn-bilstm-attention-api", "environment": "docker"},
+            version="1")
+        loki_handler.setFormatter(JsonFormatter())
+        logger.addHandler(loki_handler)
+        print("Loki handler attached successfully.")
+    except Exception as e:
+        logger.warning(f"Loki handler not attached: {e}")
 
 
 def fig_to_base64(fig):
@@ -142,6 +142,13 @@ async def lifespan(app: FastAPI):
     ml_state["lime"] = lime_explainer
     ml_state["pdp"] = pdp_explainer
     ml_state["shap_top_features"] = shap_explainer.get_top_shap_features()
+
+    # Calculate predictions for all test data so the UI can filter by Churn/No Churn
+    test_probas = deploy_model.predict(X_test_3d, verbose=0).ravel()
+    ml_state["y_pred_test"] = (test_probas >= 0.5).astype(int)
+    ml_state["y_test"] = y_test
+    # Save to global state
+    ml_state["model"] = deploy_model
 
     logger.info("Startup complete. Model and Explainers ready.")
     yield
@@ -297,11 +304,8 @@ def get_full_report(customer_index: int):
         </style>
     </head>
     <body>
-        <h1>CNN-BiLSTM-HybridAttention XAI Dashboard</h1>
-        <h3 style="text-align: center; color: #475569;">Customer Index: {customer_index}</h3>
-
-        <h2>1. Global Explainability (Model Behavior)</h2>
-
+        <h1>CNN-BiLSTM-HybridAttention Explainability Results Report</h1>
+        <h2  style="text-align: center;">1. Global Explainability</h2>
         <h3>1.1. SHAP Summary Plot</h3>
         <div class="plot-container">
             <img src="data:image/png;base64,{b64_shap_summary}" alt="SHAP Summary">
@@ -312,7 +316,7 @@ def get_full_report(customer_index: int):
             <img src="data:image/png;base64,{b64_pdp}" alt="PDP">
         </div>
 
-        <h2>2. Local Explainability (Customer Specific)</h2>
+        <h2  style="text-align: center;">2. Local Explainability (Customer Specific)</h2>
 
         <h3>Customer Profile (Context)</h3>
         <div class="plot-container">
@@ -335,7 +339,24 @@ def get_full_report(customer_index: int):
     return HTMLResponse(content=html_content)
 
 
-@app.get("/custom-ui", response_class=HTMLResponse)
+@app.get("/api/customers-by-class/{churn_class}")
+def get_customers_by_class(churn_class: int):
+    if "y_test" not in ml_state:
+        raise HTTPException(status_code=500, detail="Labels not ready")
+    # Find indices that match the ACTUAL class (0 = No Churn, 1 = Churn)
+    indices = np.where(ml_state["y_test"] == churn_class)[0]
+
+    # Limit to 150 rows for UI performance
+    results = []
+    for idx in indices[:150]:
+        raw = ml_state["processor"].get_customer_original_data(int(idx), ml_state["indices_test"])
+        customer_data = {"index": int(idx)}
+        customer_data.update(raw)
+        results.append(customer_data)
+
+    return results
+
+
 @app.get("/custom-ui", response_class=HTMLResponse)
 def custom_ui():
     html_content = """
@@ -345,106 +366,247 @@ def custom_ui():
         <title>Telecom Churn XAI Dashboard</title>
         <style>
             body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; padding: 40px; margin: 0; }
+            .header { 
+                text-align: center; 
+                margin-bottom: 40px; 
+                padding: 50px 20px; 
+                border-radius: 12px; 
+                /* Dark blue gradient representing data/telecom */
+                background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%); 
+                box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.5);
+                position: relative;
+                overflow: hidden;
+            }
+            
+            /* Subtle data grid pattern */
+            .header::before {
+                content: "";
+                position: absolute;
+                top: 0; left: 0; right: 0; bottom: 0;
+                background-image: 
+                    linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+                background-size: 30px 30px;
+                z-index: 1;
+            }
+            
+            .header h1 { 
+                color: #ffffff !important; 
+                font-size: 36px; 
+                margin-bottom: 10px; 
+                font-weight: 700; 
+                letter-spacing: 0.5px;
+                position: relative;
+                z-index: 2;
+            }
+            
+            .header p { 
+                color: #93c5fd !important; 
+                font-size: 18px; 
+                margin-top: 0; 
+                font-weight: 500;
+                position: relative;
+                z-index: 2;
+            }
 
-            /* New Header Styling */
-            .header { text-align: center; margin-bottom: 40px; }
-            .header h1 { color: #1e3a8a; font-size: 32px; margin-bottom: 10px; font-weight: 700; }
-            .header p { color: #64748b; font-size: 18px; margin-top: 0; }
-
-            .container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+            .container { max-width: 95%; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
             h2 { color: #1e3a8a; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; margin-top: 0; }
-            .input-group { margin-bottom: 20px; margin-top: 30px; }
-            label { font-weight: bold; color: #334155; }
-            input[type="number"] { padding: 10px; font-size: 16px; width: 120px; margin-left: 10px; border: 1px solid #cbd5e1; border-radius: 6px; }
-            button { padding: 10px 20px; font-size: 16px; cursor: pointer; border: none; border-radius: 6px; font-weight: bold; color: white; }
-            .btn-ok { background-color: #3b82f6; margin-left: 10px; }
-            .btn-ok:hover { background-color: #2563eb; }
-            .btn-predict { background-color: #10b981; float: right; display: none; margin-top: 20px; }
-            .btn-predict:hover { background-color: #059669; }
-            table { width: 100%; border-collapse: collapse; margin-top: 20px; display: none; }
+            .input-group { margin-bottom: 20px; margin-top: 20px; display: flex; align-items: center; gap: 15px; }
+            label { font-weight: bold; color: #334155; font-size: 16px; }
+            select { padding: 10px; font-size: 16px; border: 1px solid #cbd5e1; border-radius: 6px; width: 200px; cursor: pointer; }
+            button { padding: 10px 20px; font-size: 16px; cursor: pointer; border: none; border-radius: 6px; font-weight: bold; color: white; background-color: #3b82f6; }
+            button:hover { background-color: #2563eb; }
+
+            /* Table Container for Horizontal Scrolling */
+            .table-wrapper { width: 100%; overflow-x: auto; margin-top: 20px; display: none; border: 1px solid #e2e8f0; border-radius: 8px; }
+            table { width: 100%; border-collapse: collapse; white-space: nowrap; font-size: 14px; }
             th, td { padding: 12px; text-align: left; border-bottom: 1px solid #e2e8f0; }
-            th { background-color: #f8fafc; color: #1e293b; font-weight: bold; }
+            th { background-color: #f8fafc; color: #1e293b; font-weight: bold; position: sticky; top: 0; }
             tr:nth-child(even) { background-color: #f8fafc; }
-            .error { color: #ef4444; margin-top: 10px; font-weight: bold; display: none; }
+            tbody tr { cursor: pointer; transition: background 0.2s; }
+            tbody tr:hover { background-color: #e0f2fe; }
+
+            /* Modal Popup Styling */
+            .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); }
+            
+            /* Make the modal a flex column with a max height */
+            .modal-content {background-color: #f8f9fa; margin: 5% auto; padding: 20px; border-radius: 10px; 
+                width: 80%; max-width: 800px; box-shadow: 0 4px 20px rgba(0,0,0,0.2); 
+                display: flex; flex-direction: column; max-height: 85vh;}
+            
+            .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; }
+            .close-btn { color: #aaa; font-size: 28px; font-weight: bold; cursor: pointer; }
+            .close-btn:hover { color: black; }
+            
+            /* Make the table container scrollable */
+            .modal-body-scroll {overflow-y: auto; flex-grow: 1; margin-bottom: 15px; padding-right: 5px;}
+            
+            .btn-predict { background-color: #10b981; float: right; }
+            .btn-predict:hover { background-color: #059669; }
+                        /* --- New Modal Table Enhancements --- */
+            #modalTable th {
+                background-color: #1e3a8a !important; 
+                color: #ffffff !important;            
+                font-size: 16px !important;           
+                text-transform: uppercase;            
+                letter-spacing: 0.5px;
+                padding: 15px 12px !important;
+                border-bottom: 2px solid #0f172a !important;
+            }
+
+            #modalTable td {
+                font-size: 16px !important;           
+                padding: 14px 12px !important;        
+                color: #1e293b !important;            
+            }
+
+            /* Make the Feature Names bold and distinct */
+            #modalTable td:first-child {
+                font-weight: 600 !important;
+                color: #0f172a !important;
+            }
         </style>
     </head>
     <body>
-        <!-- NEW HEADER SECTION -->
         <div class="header">
-            <h1>Telecom Customer Churn Prediction & Explainability</h1>
+            <h1>Telecom Customer Churn Prediction and Explainability</h1>
             <p>Powered by 1D CNN-BiLSTM Hybrid Attention Neural Network</p>
         </div>
 
         <div class="container">
-            <h2>Customer Selection and Profile</h2>
+            <h2>Customer Selection</h2>
 
             <div class="input-group">
-                <label>Enter index (0 to 1408):</label>
-                <input type="number" id="customerIndex" min="0" max="1408" value="0">
-                <button class="btn-ok" onclick="fetchCustomer()">OK</button>
+                <label>Select customer type:</label>
+                <select id="classSelect">
+                    <option value="1">Churn</option>
+                    <option value="0">No Churn</option>
+                </select>
+                <button onclick="fetchCustomersByClass()">OK</button>
             </div>
 
-            <div id="errorMsg" class="error"></div>
+            <!-- Scrollable Wrapper for Table -->
+            <div class="table-wrapper" id="tableWrapper">
+                <table id="customerTable">
+                    <thead id="tableHead">
+                        <!-- Headers generated dynamically -->
+                    </thead>
+                    <tbody id="tableBody"></tbody>
+                </table>
+            </div>
+        </div>
 
-            <table id="profileTable">
-                <thead>
-                    <tr>
-                        <th>Feature Name</th>
-                        <th>Original Value</th>
-                    </tr>
-                </thead>
-                <tbody id="tableBody"></tbody>
-            </table>
-
-            <button class="btn-predict" id="predictBtn" onclick="openReport()">Predict this customer</button>
-            <div style="clear:both;"></div>
+        <!-- Modal Popup for Customer Details -->
+        <div id="customerModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Selected customer original profile data</h2>
+                    <span class="close-btn" onclick="closeModal()">&times;</span>
+                </div>
+                
+                <!-- NEW WRAPPER FOR SCROLLING -->
+                <div class="modal-body-scroll">
+                    <table id="modalTable">
+                        <thead>
+                            <tr><th>Feature Name</th><th>Original Value</th></tr>
+                        </thead>
+                        <tbody id="modalTableBody"></tbody>
+                    </table>
+                </div>
+                
+                <button class="btn-predict" id="predictBtn" onclick="openReport()">Predict this customer</button>
+                <div style="clear:both;"></div>
+            </div>
         </div>
 
         <script>
-            let currentIndex = 0;
+            let currentSelectedIndex = 0;
 
-            async function fetchCustomer() {
-                const index = document.getElementById('customerIndex').value;
-                const errorDiv = document.getElementById('errorMsg');
-                const table = document.getElementById('profileTable');
+            async function fetchCustomersByClass() {
+                const churnClass = document.getElementById('classSelect').value;
+                const wrapper = document.getElementById('tableWrapper');
+                const thead = document.getElementById('tableHead');
                 const tbody = document.getElementById('tableBody');
-                const predictBtn = document.getElementById('predictBtn');
 
-                // Reset UI
-                errorDiv.style.display = 'none';
-                table.style.display = 'none';
-                predictBtn.style.display = 'none';
-                tbody.innerHTML = '';
+                tbody.innerHTML = '<tr><td colspan="22">Loading...</td></tr>';
+                thead.innerHTML = '';
+                wrapper.style.display = 'block';
 
                 try {
-                    const response = await fetch(`/api/customer-data/${index}`);
-
-                    if (!response.ok) {
-                        throw new Error("Invalid index. Please enter a number between 0 and 1408.");
-                    }
-
+                    const response = await fetch(`/api/customers-by-class/${churnClass}`);
                     const data = await response.json();
-                    currentIndex = index;
 
-                    // Populate table
-                    for (const [key, value] of Object.entries(data)) {
-                        const row = `<tr><td>${key}</td><td>${value}</td></tr>`;
-                        tbody.innerHTML += row;
+                    if (data.length > 0) {
+                        // 1. Dynamically Generate Headers
+                        const keys = Object.keys(data[0]);
+                        const headerRow = document.createElement('tr');
+                        keys.forEach(key => {
+                            const th = document.createElement('th');
+                            th.innerText = key;
+                            headerRow.appendChild(th);
+                        });
+                        thead.appendChild(headerRow);
+
+                        // 2. Dynamically Generate Rows
+                        tbody.innerHTML = '';
+                        data.forEach((cust, i) => {
+                            const row = document.createElement('tr');
+                            // Keep the actual index for the backend, but display the sequential counter 'i'
+                            row.onclick = () => showCustomerDetails(cust.index);
+                            keys.forEach(key => {
+                                const td = document.createElement('td');
+                                if (key === 'index') {
+                                    td.innerText = i; // Display continuous 0, 1, 2...
+                                } else {
+                                    td.innerText = cust[key];
+                                }
+                                row.appendChild(td);
+                            });
+                            tbody.appendChild(row);
+                        });
+                        
+                    } else {
+                        tbody.innerHTML = '<tr><td colspan="22">No customers found for this class.</td></tr>';
                     }
-
-                    // Show table and predict button
-                    table.style.display = 'table';
-                    predictBtn.style.display = 'block';
-
                 } catch (error) {
-                    errorDiv.textContent = error.message;
-                    errorDiv.style.display = 'block';
+                    tbody.innerHTML = '<tr><td colspan="22">Error loading data.</td></tr>';
                 }
             }
 
+            async function showCustomerDetails(index) {
+                currentSelectedIndex = index;
+                document.getElementById('customerModal').style.display = "block";
+
+                const tbody = document.getElementById('modalTableBody');
+                tbody.innerHTML = '<tr><td colspan="2">Loading...</td></tr>';
+
+                try {
+                    const response = await fetch(`/api/customer-data/${index}`);
+                    const data = await response.json();
+
+                    tbody.innerHTML = '';
+                    for (const [key, value] of Object.entries(data)) {
+                        tbody.innerHTML += `<tr><td>${key}</td><td>${value}</td></tr>`;
+                    }
+                } catch (error) {
+                    tbody.innerHTML = '<tr><td colspan="2">Error loading details.</td></tr>';
+                }
+            }
+
+            function closeModal() {
+                document.getElementById('customerModal').style.display = "none";
+            }
+
             function openReport() {
-                // Open the report in a new tab
-                window.open(`/full-report/${currentIndex}`, '_blank');
+                window.open(`/full-report/${currentSelectedIndex}`, '_blank');
+            }
+
+            // Close modal if clicking outside
+            window.onclick = function(event) {
+                const modal = document.getElementById('customerModal');
+                if (event.target == modal) {
+                    modal.style.display = "none";
+                }
             }
         </script>
     </body>
